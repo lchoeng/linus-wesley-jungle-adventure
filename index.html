@@ -635,7 +635,7 @@ addEventListener('keydown', e => {
   if ((e.code === 'Escape' || e.code === 'KeyP') && G) togglePause();
 });
 addEventListener('keyup', e => { KEYS[e.code] = false; });
-addEventListener('blur', () => { for (const k in KEYS) KEYS[k] = false; if (G && G.state === 'play') togglePause(); });
+addEventListener('blur', () => { for (const k in KEYS) KEYS[k] = false; });
 
 function pads() { try { return [...(navigator.getGamepads ? navigator.getGamepads() : [])].filter(Boolean); } catch (e) { return []; } }
 function readInput(p) {
@@ -1489,7 +1489,10 @@ function readTouches(e) {
 }
 ['touchstart', 'touchmove', 'touchend', 'touchcancel'].forEach(ev => document.addEventListener(ev, e => {
   initAudio();
-  if (G && !menu.classList.contains('show')) { if (e.cancelable) e.preventDefault(); readTouches(e); }
+  if (G && !menu.classList.contains('show')) {
+    if (ev === 'touchstart') for (const t of e.changedTouches) { const el = document.elementFromPoint(t.clientX, t.clientY); if (el && el.closest && el.closest('#pauseBtn')) { if (e.cancelable) e.preventDefault(); TOUCH[0] = {}; TOUCH[1] = {}; togglePause(); return; } }
+    if (e.cancelable) e.preventDefault(); readTouches(e);
+  }
 }, { passive: false }));
 document.addEventListener('gesturestart', e => e.preventDefault());
 
