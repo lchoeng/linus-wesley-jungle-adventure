@@ -13,7 +13,7 @@ Three jungle levels (Jungle Trail, Vine River, Ancient Ruins) with coins, spicy 
 | | Move | Jump | Fire |
 |---|---|---|---|
 | Single player | ← → or A D | Space / ↑ / W | X / F / Enter |
-| P1 Linus (co-op) | A D | W | F |
-| P2 Wesley (co-op) | ← → | ↑ | Enter |
+| P1 Linus, yellow shirt (co-op) | A D | W | F |
+| P2 Wesley, blue shirt (co-op) | ← → | ↑ | Enter |
 
 Gamepads: stick/D-pad to move, A to jump, B/X to fire. Press P or Esc to pause.

@@ -143,12 +143,12 @@ function drawSpr(key, x, feetY, scale, facing, o) {
 /* ---------- characters ---------- */
 const CH = {
   linus: {
-    name: 'Linus', col: '#4f95d8', dark: '#1f5c9a', h: 100, ref: 'b_idle',
-    fr: { idle: 'b_idle', run: 'b_run', jump: 'b_kick', fall: 'b_kick', stomp: 'b_stomp', fire: 'b_roar', hurt: 'b_hurt', win: 'b_roar', die: 'b_flip' }
+    name: 'Linus', col: '#f2c230', dark: '#b07d00', h: 100, ref: 'y_idle',
+    fr: { idle: 'y_idle', run: 'y_run', jump: 'y_upper', fall: 'y_fkick', stomp: 'y_fkick', fire: 'y_lunge', hurt: 'y_block', win: 'y_cheer', die: 'y_sweep' }
   },
   wesley: {
-    name: 'Wesley', col: '#f2c230', dark: '#b07d00', h: 92, ref: 'y_idle',
-    fr: { idle: 'y_idle', run: 'y_run', jump: 'y_upper', fall: 'y_fkick', stomp: 'y_fkick', fire: 'y_lunge', hurt: 'y_block', win: 'y_cheer', die: 'y_sweep' }
+    name: 'Wesley', col: '#4f95d8', dark: '#1f5c9a', h: 92, ref: 'b_idle',
+    fr: { idle: 'b_idle', run: 'b_run', jump: 'b_kick', fall: 'b_kick', stomp: 'b_stomp', fire: 'b_roar', hurt: 'b_hurt', win: 'b_roar', die: 'b_flip' }
   }
 };
 
@@ -1372,7 +1372,7 @@ function mainMenu() {
   if (!BG) { const th = THEMES[0]; BG = { far: makeFar(th, 13), mid: makeMid(th, 29), dirt: ctx.createPattern(makeDirt(th), 'repeat'), grass: ctx.createPattern(makeGrass(th), 'repeat'), th }; }
   showMenuHTML(`
   <div class="title"><span class="t1">LINUS &amp; WESLEY</span><span class="t2">JUNGLE ADVENTURE</span></div>
-  <div class="heroes">${sprImg('b_run', 150)}${sprImg('d_roar', 120)}${sprImg('y_run', 120, true)}</div>
+  <div class="heroes">${sprImg('y_run', 130)}${sprImg('d_roar', 120)}${sprImg('b_run', 140, true)}</div>
   <div class="btns">
     <button data-go="single" class="b big">👤 SINGLE PLAYER</button>
     <button data-go="coop" class="b big">👥 TWO PLAYER CO-OP</button>
@@ -1387,8 +1387,8 @@ function pickChar(level) {
   pendingLevel = level || 1;
   showMenuHTML(`<div class="h">WHO'S PLAYING?</div>
   <div class="cards">
-    <button class="card" data-go="go1" data-c="linus" style="--c:${CH.linus.col}">${sprImg('b_idle', 190, true)}<span>LINUS</span></button>
-    <button class="card" data-go="go1" data-c="wesley" style="--c:${CH.wesley.col}">${sprImg('y_idle', 175)}<span>WESLEY</span></button>
+    <button class="card" data-go="go1" data-c="linus" style="--c:${CH.linus.col}">${sprImg('y_idle', 185)}<span>LINUS</span></button>
+    <button class="card" data-go="go1" data-c="wesley" style="--c:${CH.wesley.col}">${sprImg('b_idle', 175, true)}<span>WESLEY</span></button>
   </div><button class="b back" data-go="menu">⬅ BACK</button>`);
 }
 function levelSelect() {
@@ -1404,9 +1404,9 @@ function levelMode(l) {
   pendingLevel = +l;
   showMenuHTML(`<div class="h">LEVEL ${l}: WHO'S PLAYING?</div>
   <div class="cards">
-    <button class="card sm" data-go="go1" data-c="linus" style="--c:${CH.linus.col}">${sprImg('b_idle', 130, true)}<span>LINUS</span></button>
-    <button class="card sm" data-go="go1" data-c="wesley" style="--c:${CH.wesley.col}">${sprImg('y_idle', 120)}<span>WESLEY</span></button>
-    <button class="card sm" data-go="go2" style="--c:#7dd36a">${sprImg('b_idle', 120, true)}${sprImg('y_idle', 110)}<span>BOTH!</span></button>
+    <button class="card sm" data-go="go1" data-c="linus" style="--c:${CH.linus.col}">${sprImg('y_idle', 128)}<span>LINUS</span></button>
+    <button class="card sm" data-go="go1" data-c="wesley" style="--c:${CH.wesley.col}">${sprImg('b_idle', 120, true)}<span>WESLEY</span></button>
+    <button class="card sm" data-go="go2" style="--c:#7dd36a">${sprImg('y_idle', 118)}${sprImg('b_idle', 110, true)}<span>BOTH!</span></button>
   </div><button class="b back" data-go="levels">⬅ BACK</button>`);
 }
 function collections() {
