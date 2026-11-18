@@ -2,6 +2,9 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Jungle Adventure">
 <title>Linus &amp; Wesley Jungle Adventure</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -46,7 +49,7 @@ html,body{margin:0;height:100%;background:#1d130c;overflow:hidden;font-family:"A
 .award{font-size:calc(var(--u)*26);color:#ffd23a;-webkit-text-stroke:calc(var(--u)*1.5) #1d130c;paint-order:stroke fill}
 #pauseBtn{position:absolute;right:calc(var(--u)*6);top:calc(var(--u)*72);width:calc(var(--u)*46);height:calc(var(--u)*46);border-radius:50%;background:#fff3d0;border:calc(var(--u)*3) solid #1d130c;display:none;align-items:center;justify-content:center;font-size:calc(var(--u)*20);pointer-events:auto;cursor:pointer;color:#1d130c}
 #touch{position:absolute;inset:0;display:none;pointer-events:none}
-.tb{position:absolute;pointer-events:auto;display:flex;align-items:center;justify-content:center;border:calc(var(--u)*4) solid rgba(29,19,12,.85);background:rgba(255,243,208,.4);border-radius:50%;color:#1d130c;font-size:calc(var(--u)*34)}
+.tb{position:absolute;pointer-events:auto;touch-action:none;display:flex;align-items:center;justify-content:center;border:calc(var(--u)*4) solid rgba(29,19,12,.85);background:rgba(255,243,208,.4);border-radius:50%;color:#1d130c;font-size:calc(var(--u)*34)}
 .tb.on{background:rgba(255,210,58,.9);transform:scale(.94)}
 .pad{position:absolute;bottom:calc(var(--u)*14);width:calc(var(--u)*250);height:calc(var(--u)*120)}
 .pad.left{left:calc(var(--u)*14)}.pad.right{right:calc(var(--u)*14)}
@@ -1355,7 +1358,13 @@ const menu = $('#menu'), touchEl = $('#touch');
 function isTouch() { return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches); }
 function hideMenu() { menu.classList.remove('show'); menu.innerHTML = ''; $('#pauseBtn').style.display = G ? 'flex' : 'none'; }
 let menuAt = 0;
-function showMenuHTML(h) { if (G) G.banners = []; menuAt = performance.now(); menu.innerHTML = h; menu.classList.add('show'); $('#pauseBtn').style.display = 'none'; menu.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', ev => { if (performance.now() - menuAt < 450) return; initAudio(); sfx('click'); ACTIONS[b.dataset.go](b.dataset); })); }
+function showMenuHTML(h) { if (G) G.banners = []; menuAt = performance.now(); menu.innerHTML = h; menu.classList.add('show'); $('#pauseBtn').style.display = 'none'; menu.querySelectorAll('[data-go]').forEach(b => {
+    const fire = () => { const n = performance.now(); if (n - menuAt < 400 || n - lastFire < 500) return; lastFire = n; initAudio(); sfx('click'); ACTIONS[b.dataset.go](b.dataset); };
+    b.addEventListener('pointerdown', () => { b._down = performance.now(); });
+    b.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse' && b._down && performance.now() - b._down < 1500) fire(); b._down = 0; });
+    b.addEventListener('click', fire);
+  }); }
+let lastFire = 0;
 const sprImg = (k, h, flip) => `<img src="${SPR[k].d}" style="height:calc(var(--u)*${h});${flip ? 'transform:scaleX(-1)' : ''}" alt="">`;
 const EGGURL = {}; const eggImg = (c, dim) => `<img src="${EGGURL[c] || (EGGURL[c] = ART.egg[c].toDataURL())}" class="egg ${dim ? 'dim' : ''}" alt="">`;
 function mainMenu() {
@@ -1462,7 +1471,7 @@ const ACTIONS = {
   resume: () => togglePause(),
   mute: () => { setMute(!muted); if (G) { G.state = 'play'; togglePause(); } else mainMenu(); },
 };
-$('#pauseBtn').addEventListener('click', () => { initAudio(); togglePause(); });
+
 document.addEventListener('visibilitychange', () => { if (document.hidden && G && G.state === 'play') togglePause(); });
 
 /* ---------- touch controls ---------- */
@@ -1479,21 +1488,36 @@ function showTouch(on) {
       <div class="pad2 p2" style="--c:${CH.wesley.col}"><div class="lbl">WESLEY</div>${btn(1, 'f', '🔥', 'sm')}${btn(1, 'j', '⤒', 'sm')}${btn(1, 'l', '◀', 'sm')}${btn(1, 'r', '▶', 'sm')}</div>`;
   }
 }
-function readTouches(e) {
-  if (!G || touchEl.style.display === 'none') return;
+/* Input from both Pointer Events and Touch Events, merged, so controls work in Safari, the Claude app and Home Screen web apps */
+const PTR = new Map(); let TOUCHLIST = [];
+function btnAt(x, y) { const el = document.elementFromPoint(x, y); return el && el.closest ? el.closest('.tb') : null; }
+function syncTouch() {
   TOUCH[0] = {}; TOUCH[1] = {};
-  touchEl.querySelectorAll('.tb').forEach(b => b.classList.remove('on'));
-  for (const t of e.touches) {
-    const el = document.elementFromPoint(t.clientX, t.clientY);
-    if (el && el.classList.contains('tb')) { TOUCH[el.dataset.p][el.dataset.k] = true; el.classList.add('on'); }
-  }
+  touchEl.querySelectorAll('.tb.on').forEach(b => b.classList.remove('on'));
+  if (!G || touchEl.style.display === 'none') return;
+  const els = [...PTR.values(), ...TOUCHLIST.map(t => btnAt(t.x, t.y))];
+  for (const el of els) if (el && el.dataset.k) { TOUCH[el.dataset.p][el.dataset.k] = true; el.classList.add('on'); }
 }
+function inGame() { return G && !menu.classList.contains('show'); }
+let pauseAt = 0;
+function pausePress() { const n = performance.now(); if (n - pauseAt < 400) return; pauseAt = n; PTR.clear(); TOUCHLIST = []; syncTouch(); initAudio(); togglePause(); }
+document.addEventListener('pointerdown', e => {
+  initAudio();
+  if (!inGame()) return;
+  const t = e.target;
+  if (t && t.closest && t.closest('#pauseBtn')) { e.preventDefault(); pausePress(); return; }
+  const el = btnAt(e.clientX, e.clientY);
+  if (el) { e.preventDefault(); try { el.releasePointerCapture && el.releasePointerCapture(e.pointerId); } catch (_) { } PTR.set(e.pointerId, el); syncTouch(); }
+}, { passive: false });
+document.addEventListener('pointermove', e => { if (PTR.has(e.pointerId)) { PTR.set(e.pointerId, btnAt(e.clientX, e.clientY)); syncTouch(); } });
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => document.addEventListener(ev, e => { if (ev === 'lostpointercapture') return; if (PTR.delete(e.pointerId)) syncTouch(); }));
 ['touchstart', 'touchmove', 'touchend', 'touchcancel'].forEach(ev => document.addEventListener(ev, e => {
   initAudio();
-  if (G && !menu.classList.contains('show')) {
-    if (ev === 'touchstart') for (const t of e.changedTouches) { const el = document.elementFromPoint(t.clientX, t.clientY); if (el && el.closest && el.closest('#pauseBtn')) { if (e.cancelable) e.preventDefault(); TOUCH[0] = {}; TOUCH[1] = {}; togglePause(); return; } }
-    if (e.cancelable) e.preventDefault(); readTouches(e);
-  }
+  if (!inGame()) { TOUCHLIST = []; return; }
+  if (ev === 'touchstart') for (const t of e.changedTouches) { const el = document.elementFromPoint(t.clientX, t.clientY); if (el && el.closest && el.closest('#pauseBtn')) { if (e.cancelable) e.preventDefault(); pausePress(); return; } }
+  if (e.cancelable) e.preventDefault();
+  TOUCHLIST = [...e.touches].map(t => ({ x: t.clientX, y: t.clientY }));
+  syncTouch();
 }, { passive: false }));
 document.addEventListener('gesturestart', e => e.preventDefault());
 
@@ -1514,5 +1538,7 @@ function loop(ts) {
     document.addEventListener('pointerdown', initAudio, { once: false });
   }
 })();
+
+$('#pauseBtn').addEventListener('click', () => pausePress());
 
 </script></body></html>
