@@ -1354,7 +1354,8 @@ const $ = s => document.querySelector(s);
 const menu = $('#menu'), touchEl = $('#touch');
 function isTouch() { return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer:coarse)').matches); }
 function hideMenu() { menu.classList.remove('show'); menu.innerHTML = ''; $('#pauseBtn').style.display = G ? 'flex' : 'none'; }
-function showMenuHTML(h) { if (G) G.banners = []; menu.innerHTML = h; menu.classList.add('show'); $('#pauseBtn').style.display = 'none'; menu.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', ev => { initAudio(); sfx('click'); ACTIONS[b.dataset.go](b.dataset); })); }
+let menuAt = 0;
+function showMenuHTML(h) { if (G) G.banners = []; menuAt = performance.now(); menu.innerHTML = h; menu.classList.add('show'); $('#pauseBtn').style.display = 'none'; menu.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', ev => { if (performance.now() - menuAt < 450) return; initAudio(); sfx('click'); ACTIONS[b.dataset.go](b.dataset); })); }
 const sprImg = (k, h, flip) => `<img src="${SPR[k].d}" style="height:calc(var(--u)*${h});${flip ? 'transform:scaleX(-1)' : ''}" alt="">`;
 const EGGURL = {}; const eggImg = (c, dim) => `<img src="${EGGURL[c] || (EGGURL[c] = ART.egg[c].toDataURL())}" class="egg ${dim ? 'dim' : ''}" alt="">`;
 function mainMenu() {
