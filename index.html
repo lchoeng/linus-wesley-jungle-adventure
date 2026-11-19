@@ -8,9 +8,9 @@
 <title>Linus &amp; Wesley Jungle Adventure</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-html,body{margin:0;height:100%;background:#1d130c;overflow:hidden;font-family:"Arial Black","Arial Rounded MT Bold",Impact,sans-serif;touch-action:none}
-#wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
-#c{display:block;background:#9fe0f2}
+html,body{margin:0;height:100%;width:100%;position:fixed;top:0;left:0;background:#1d130c;overflow:hidden;overscroll-behavior:none;font-family:"Arial Black","Arial Rounded MT Bold",Impact,sans-serif;touch-action:none}
+#wrap{position:fixed;top:0;left:0;width:100%;height:100%;overflow:hidden}
+#c{display:block;position:absolute;background:#9fe0f2}
 #ui{position:absolute;pointer-events:none}
 #menu{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*12);background:rgba(20,40,20,.45);pointer-events:auto;padding:calc(var(--u)*14)}
 #menu.show{display:flex}
@@ -79,16 +79,33 @@ const SPR = {"b_idle": {"w": 144, "h": 225, "d": "data:image/webp;base64,UklGRmg
 const W = 960, H = 540, GY = 470;
 const cvs = document.getElementById('c'), ctx = cvs.getContext('2d');
 let VS = 1, DPR = 1;
-function resize() {
-  const s = Math.min(innerWidth / W, innerHeight / H);
-  VS = s; DPR = Math.min(window.devicePixelRatio || 1, 2);
-  cvs.style.width = (W * s) + 'px'; cvs.style.height = (H * s) + 'px';
-  cvs.width = Math.round(W * s * DPR); cvs.height = Math.round(H * s * DPR);
-  const ui = document.getElementById('ui');
-  ui.style.width = (W * s) + 'px'; ui.style.height = (H * s) + 'px';
-  document.documentElement.style.setProperty('--u', (s) + 'px');
+function viewSize() {
+  const vv = window.visualViewport;
+  const w = Math.round(vv ? vv.width : innerWidth) || document.documentElement.clientWidth;
+  const h = Math.round(vv ? vv.height : innerHeight) || document.documentElement.clientHeight;
+  return [w, h];
 }
-addEventListener('resize', resize); resize();
+function resize() {
+  try { window.scrollTo(0, 0); } catch (e) { }
+  const [ww, wh] = viewSize();
+  const s = Math.min(ww / W, wh / H);
+  VS = s; DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const cw = W * s, ch = H * s, left = Math.round((ww - cw) / 2), top = Math.round((wh - ch) / 2);
+  const wrap = document.getElementById('wrap');
+  wrap.style.width = ww + 'px'; wrap.style.height = wh + 'px';
+  for (const el of [cvs, document.getElementById('ui')]) {
+    el.style.left = left + 'px'; el.style.top = top + 'px'; el.style.width = cw + 'px'; el.style.height = ch + 'px';
+  }
+  cvs.width = Math.round(cw * DPR); cvs.height = Math.round(ch * DPR);
+  document.documentElement.style.setProperty('--u', s + 'px');
+}
+function resizeSoon() { resize(); [60, 200, 450, 900].forEach(t => setTimeout(resize, t)); }
+addEventListener('resize', resizeSoon);
+addEventListener('orientationchange', resizeSoon);
+addEventListener('pageshow', resizeSoon);
+if (window.visualViewport) { visualViewport.addEventListener('resize', resizeSoon); visualViewport.addEventListener('scroll', () => { if (visualViewport.offsetTop || visualViewport.offsetLeft) resize(); }); }
+document.addEventListener('visibilitychange', () => { if (!document.hidden) resizeSoon(); });
+resize();
 
 /* ---------- seeded random ---------- */
 function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
