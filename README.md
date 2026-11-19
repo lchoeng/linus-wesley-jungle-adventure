@@ -7,7 +7,7 @@ A side-scrolling dinosaur platformer for the whole family: pick Daddy, Mommy, Ky
 - **Level Select:** replay any level you've unlocked.
 - **Collections:** dinosaur eggs and achievements you've found.
 
-Six levels (Jungle Trail, Vine River, Ancient Ruins, Misty Swamp, Lava Caves, Treetop Kingdom) with coins, spicy noodles for fire breath, Mini Carnotaurus to stomp and 58 hidden dinosaur eggs. The Giant Carnotaurus is fought at the end of Level 3, then again (angrier and tougher) at the end of Level 6, guarding the Tree House Castle.
+Nine levels that get harder as you go: Jungle Trail, Vine River, Ancient Ruins, Misty Swamp, Lava Caves, Treetop Kingdom, Thunder Canyon (faster dinos), Night Jungle (hopping dinos) and Volcano Summit (hardest). Collect coins, eat spicy noodles for fire breath, stomp Mini Carnotaurus and find 88 hidden dinosaur eggs. The Giant Carnotaurus is fought in Levels 3 and 6, then one last time in Level 9, which ends at the Tree House Castle.
 
 ## Controls
 | | Move | Jump | Fire |
